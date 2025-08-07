@@ -4,10 +4,11 @@
  */
 
 // 核心模块
-export { MonitorSDK, Monitor } from './core';
+import {  Monitor } from './core';
+export { MonitorSDK } from './core';
 
 // 类型定义
-export {
+export type {
   SDKConfig,
   MonitorEvent,
   PerformanceEvent,
