@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>前端监控SDK - 基础用法示例</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 8px;
+      font-size: 14px;
+    }
+    .button:hover {
+      background: #0056b3;
+    }
+    .button.danger {
+      background: #dc3545;
+    }
+    .button.danger:hover {
+      background: #c82333;
+    }
+    .status {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 15px;
+      margin: 20px 0;
+      font-family: monospace;
+      white-space: pre-wrap;
+    }
+    .form-group {
+      margin: 15px 0;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    .sensitive {
+      background: #ffe6e6;
+      border: 1px dashed #ff9999;
+      padding: 10px;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>前端监控SDK示例</h1>
+    <p>此页面演示了前端监控SDK的各种功能，包括性能监控、错误追踪、用户行为分析和会话重放。</p>
+
+    <div class="status" id="status">
+      SDK状态: 未初始化
+    </div>
+
+    <div class="form-group">
+      <label for="userId">用户ID:</label>
+      <input type="text" id="userId" placeholder="输入用户ID">
+    </div>
+
+    <div class="form-group">
+      <label for="eventName">自定义事件名:</label>
+      <input type="text" id="eventName" placeholder="输入事件名">
+    </div>
+
+    <div class="form-group sensitive">
+      <label for="password">密码 (敏感数据):</label>
+      <input type="password" id="password" placeholder="这个输入会被脱敏">
+    </div>
+
+    <h3>基础功能</h3>
+    <button class="button" onclick="initSDK()">初始化SDK</button>
+    <button class="button" onclick="updateStatus()">更新状态</button>
+    <button class="button" onclick="setUser()">设置用户</button>
+    <button class="button" onclick="clearUser()">清除用户</button>
+
+    <h3>事件追踪</h3>
+    <button class="button" onclick="trackCustomEvent()">追踪自定义事件</button>
+    <button class="button" onclick="trackButtonClick()">追踪按钮点击</button>
+    <button class="button" onclick="simulatePageView()">模拟页面访问</button>
+
+    <h3>性能监控</h3>
+    <button class="button" onclick="performanceMark()">性能标记</button>
+    <button class="button" onclick="performanceMeasure()">性能测量</button>
+    <button class="button" onclick="simulateSlowOperation()">模拟慢操作</button>
+
+    <h3>错误追踪</h3>
+    <button class="button danger" onclick="throwError()">抛出JavaScript错误</button>
+    <button class="button danger" onclick="networkError()">模拟网络错误</button>
+    <button class="button danger" onclick="customError()">自定义错误上报</button>
+
+    <h3>会话重放</h3>
+    <button class="button" onclick="startReplay()">开始录制</button>
+    <button class="button" onclick="pauseReplay()">暂停录制</button>
+    <button class="button" onclick="resumeReplay()">恢复录制</button>
+    <button class="button" onclick="stopReplay()">停止录制</button>
+
+    <h3>数据管理</h3>
+    <button class="button" onclick="flushData()">手动刷新数据</button>
+    <button class="button" onclick="getQueueStatus()">查看队列状态</button>
+
+    <div style="height: 200px; overflow-y: scroll; border: 1px solid #ddd; padding: 20px; margin: 20px 0;">
+      <p>这是一个可滚动的区域，用于测试滚动行为追踪。</p>
+      <p>滚动此区域将被SDK自动记录。</p>
+      <p style="margin: 50px 0;">更多内容...</p>
+      <p style="margin: 50px 0;">继续滚动...</p>
+      <p style="margin: 50px 0;">最后的内容</p>
+    </div>
+  </div>
+
+  <!-- 引入SDK -->
+  <script src="../dist/index.min.js"></script>
+  
+  <script>
+    // 全局变量
+    let sdkInitialized = false;
+
+    // 初始化SDK
+    function initSDK() {
+      try {
+        Monitor.init({
+          appId: 'demo-app',
+          apiKey: 'demo-api-key',
+          endpoint: 'https://api.demo.com/collect',
+          
+          features: {
+            performance: true,
+            errors: true,
+            behavior: true,
+            replay: true
+          },
+          
+          sampling: {
+            performance: 1,
+            errors: 1,
+            behavior: 1,
+            replay: 1
+          },
+          
+          debug: true,
+          environment: 'demo'
+        });
+
+        sdkInitialized = true;
+        updateStatus();
+        console.log('SDK初始化成功');
+      } catch (error) {
+        console.error('SDK初始化失败:', error);
+        alert('SDK初始化失败: ' + error.message);
+      }
+    }
+
+    // 更新状态显示
+    function updateStatus() {
+      if (!sdkInitialized) {
+        document.getElementById('status').textContent = 'SDK状态: 未初始化';
+        return;
+      }
+
+      try {
+        const status = Monitor.getStatus();
+        document.getElementById('status').textContent = `SDK状态: ${JSON.stringify(status, null, 2)}`;
+      } catch (error) {
+        document.getElementById('status').textContent = 'SDK状态: 获取状态失败';
+      }
+    }
+
+    // 设置用户
+    function setUser() {
+      if (!sdkInitialized) {
+        alert('请先初始化SDK');
+        return;
+      }
+
+      const userId = document.getElementById('userId').value || 'demo-user-' + Date.now();
+      Monitor.setUser(userId, {
+        email: 'demo@example.com',
+        plan: 'premium',
+        joinDate: new Date().toISOString()
+      });
+      updateStatus();
+    }
+
+    // 清除用户
+    function clearUser() {
+      if (!sdkInitialized) {
+        alert('请先初始化SDK');
+        return;
+      }
+
+      Monitor.clearUser();
+      updateStatus();
+    }
+
+    // 追踪自定义事件
+    function trackCustomEvent() {
+      if (!sdkInitialized) {
+        alert('请先初始化SDK');
+        return;
+      }
+
+      const eventName = document.getElementById('eventName').value || 'demo_event';
+      Monitor.track(eventName, {
+        timestamp: Date.now(),
+        page: 'demo_page',
+        source: 'manual_trigger',
+        randomValue: Math.random()
+      });
+
+      console.log('已追踪自定义事件:', eventName);
+    }
+
+    // 追踪按钮点击
+    function trackButtonClick() {
+      if (!sdkInitialized) {
+        alert('请先初始化SDK');
+        return;
+      }
+
+      Monitor.track('button_click', {
+        buttonText: '追踪按钮点击',
+        clickTime: new Date().toISOString(),
+        userAgent: navigator.userAgent
+      });
+
+      console.log('已追踪按钮点击事件');
+    }
+
+    // 模拟页面访问
+    function simulatePageView() {
+      if (!sdkInitialized) {
+        alert('请先初始化SDK');
+        return;
+      }
+
+      Monitor.track('page_view', {
+        page: '/demo/page-' + Math.floor(Math.random() * 100),
+        referrer: document.referrer,
+        title: document.title,
+        timestamp: Date.now()
+      });
+
+      console.log('已追踪页面访问事件');
+    }
+
+    // 性能标记
+    function performanceMark() {
+      if (!sdkInitialized) {
+        alert('请先初始化SDK');
+        return;
+      }
+
+      const markName = 'demo-mark-' + Date.now();
+      Monitor.mark(markName);
+      console.log('已创建性能标记:', markName);
+    }
+
+    // 性能测量
+    function performanceMeasure() {
+      if (!sdkInitialized) {
+        alert('请先初始化SDK');
+        return;
+      }
+
+      Monitor.mark('measure-start');
+      
+      // 模拟一些操作
+      setTimeout(() => {
+        Monitor.mark('measure-end');
+        const duration = Monitor.measure('demo-measure', 'measure-start', 'measure-end');
+        console.log('性能测量结果:', duration + 'ms');
+      }, Math.random() * 1000);
+    }
+
+    // 模拟慢操作
+    function simulateSlowOperation() {
+      if (!sdkInitialized) {
+        alert('请先初始化SDK');
+        return;
+      }
+
+      Monitor.mark('slow-operation-start');
+      
+      // 模拟CPU密集型操作
+      const start = Date.now();
+      while (Date.now() - start < 100) {
+        // 空循环
+      }
+      
+      Monitor.mark('slow-operation-end');
+      Monitor.measure('slow-operation', 'slow-operation-start', 'slow-operation-end');
+      console.log('慢操作完成');
+    }
+
+    // 抛出JavaScript错误
+    function throwError() {
+      if (!sdkInitialized) {
+        alert('请先初始化SDK');
+        return;
+      }
+
+      // 这会被SDK自动捕获
+      throw new Error('这是一个演示用的JavaScript错误');
+    }
+
+    // 模拟网络错误
+    function networkError() {
+      if (!sdkInitialized) {
+        alert('请先初始化SDK');
+        return;
+      }
+
+      // 发起一个会失败的网络请求
+      fetch('https://invalid-domain-that-does-not-exist.com/api/test')
+        .catch(error => {
+          console.log('网络错误已被SDK捕获:', error);
+        });
+    }
+
+    // 自定义错误上报
+    function customError() {
+      if (!sdkInitialized) {
+        alert('请先初始化SDK');
+        return;
+      }
+
+      Monitor.captureException(new Error('自定义错误上报'), {
+        component: 'demo-page',
+        action: 'custom_error_button',
+        timestamp: Date.now()
+      }, 'medium');
+
+      console.log('已上报自定义错误');
+    }
+
+    // 开始会话重放
+    function startReplay() {
+      if (!sdkInitialized) {
+        alert('请先初始化SDK');
+        return;
+      }
+
+      Monitor.startReplay();
+      console.log('会话重放已开始');
+    }
+
+    // 暂停会话重放
+    function pauseReplay() {
+      if (!sdkInitialized) {
+        alert('请先初始化SDK');
+        return;
+      }
+
+      Monitor.pauseReplay();
+      console.log('会话重放已暂停');
+    }
+
+    // 恢复会话重放
+    function resumeReplay() {
+      if (!sdkInitialized) {
+        alert('请先初始化SDK');
+        return;
+      }
+
+      Monitor.resumeReplay();
+      console.log('会话重放已恢复');
+    }
+
+    // 停止会话重放
+    function stopReplay() {
+      if (!sdkInitialized) {
+        alert('请先初始化SDK');
+        return;
+      }
+
+      Monitor.stopReplay();
+      console.log('会话重放已停止');
+    }
+
+    // 手动刷新数据
+    async function flushData() {
+      if (!sdkInitialized) {
+        alert('请先初始化SDK');
+        return;
+      }
+
+      try {
+        await Monitor.flush();
+        console.log('数据刷新完成');
+      } catch (error) {
+        console.error('数据刷新失败:', error);
+      }
+    }
+
+    // 查看队列状态
+    function getQueueStatus() {
+      if (!sdkInitialized) {
+        alert('请先初始化SDK');
+        return;
+      }
+
+      const status = Monitor.getStatus();
+      alert(`队列中有 ${status.queueSize} 个事件待发送`);
+    }
+
+    // 页面加载完成后的初始化
+    window.addEventListener('load', () => {
+      console.log('页面加载完成，可以手动初始化SDK或查看示例功能');
+      
+      // 监听未捕获的Promise rejection（演示用）
+      window.addEventListener('unhandledrejection', (event) => {
+        console.log('未处理的Promise rejection:', event.reason);
+      });
+    });
+
+    // 添加一些交互元素用于测试行为追踪
+    document.addEventListener('click', (event) => {
+      if (sdkInitialized && event.target.tagName !== 'BUTTON') {
+        console.log('检测到点击事件:', event.target.tagName);
+      }
+    });
+
+    // 模拟动态内容变化（测试DOM变化监控）
+    setInterval(() => {
+      if (sdkInitialized) {
+        const timestamp = new Date().toLocaleTimeString();
+        const existingElement = document.getElementById('dynamic-content');
+        if (existingElement) {
+          existingElement.textContent = `动态内容更新时间: ${timestamp}`;
+        } else {
+          const dynamicDiv = document.createElement('div');
+          dynamicDiv.id = 'dynamic-content';
+          dynamicDiv.style.cssText = 'margin: 10px 0; padding: 10px; background: #e9ecef; border-radius: 4px;';
+          dynamicDiv.textContent = `动态内容创建时间: ${timestamp}`;
+          document.querySelector('.container').appendChild(dynamicDiv);
+        }
+      }
+    }, 10000); // 每10秒更新一次
+  </script>
+</body>
+</html>
